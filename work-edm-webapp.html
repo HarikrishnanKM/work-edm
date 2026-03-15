@@ -1,0 +1,1872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="work-edm - Employee Data Management System">
+    <meta name="theme-color" content="#4f46e5">
+    <title>work-edm - Employee Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --primary-light: #eef2ff;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --slate-50: #f8fafc;
+            --slate-100: #f1f5f9;
+            --slate-200: #e2e8f0;
+            --slate-500: #64748b;
+            --slate-600: #475569;
+            --slate-700: #334155;
+            --slate-900: #0f172a;
+            --white: #ffffff;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            color: var(--slate-900);
+        }
+
+        /* Layout */
+        .app-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 256px;
+            background: var(--white);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 40;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar.hidden {
+            transform: translateX(-100%);
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100vh;
+        }
+
+        .sidebar-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--slate-200);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .logo-text h1 {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--slate-900);
+        }
+
+        .logo-text p {
+            font-size: 12px;
+            color: var(--slate-500);
+        }
+
+        .nav-menu {
+            padding: 16px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            background: none;
+            color: var(--slate-600);
+            font-size: 14px;
+            font-weight: 500;
+            width: 100%;
+            text-align: left;
+        }
+
+        .nav-item:hover {
+            background: var(--slate-50);
+            color: var(--slate-900);
+        }
+
+        .nav-item.active {
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .sidebar-footer {
+            padding: 16px;
+            border-top: 1px solid var(--slate-200);
+            background: var(--slate-50);
+            text-align: center;
+            font-size: 12px;
+            color: var(--slate-500);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: var(--white);
+            border-bottom: 1px solid var(--slate-200);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .header-left h2 {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--slate-900);
+        }
+
+        .header-left p {
+            font-size: 13px;
+            color: var(--slate-500);
+            margin-top: 4px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .user-profile:hover {
+            background: var(--slate-100);
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .user-info {
+            display: none;
+        }
+
+        .user-info p:first-child {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--slate-900);
+        }
+
+        .user-info p:last-child {
+            font-size: 12px;
+            color: var(--slate-500);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background: var(--white);
+            border: 1px solid var(--slate-200);
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            min-width: 200px;
+            display: none;
+            z-index: 50;
+            margin-top: 8px;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 12px 16px;
+            font-size: 13px;
+            color: var(--slate-700);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s ease;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        .dropdown-item:hover {
+            background: var(--slate-50);
+        }
+
+        .dropdown-item:first-child {
+            border-radius: 8px 8px 0 0;
+        }
+
+        .dropdown-item:last-child {
+            border-radius: 0 0 8px 8px;
+            border-top: 1px solid var(--slate-200);
+            color: var(--danger);
+        }
+
+        /* Content Area */
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--white);
+            border-radius: 8px;
+            border: 1px solid var(--slate-200);
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            transition: box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--white);
+            border-radius: 8px;
+            border: 1px solid var(--slate-200);
+            padding: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .stat-content h3 {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--slate-600);
+            margin-bottom: 8px;
+        }
+
+        .stat-content .value {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--slate-900);
+        }
+
+        .stat-content .change {
+            font-size: 12px;
+            color: var(--slate-500);
+            margin-top: 8px;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .stat-icon.blue {
+            background: #dbeafe;
+            color: #0284c7;
+        }
+
+        .stat-icon.green {
+            background: #dcfce7;
+            color: var(--success);
+        }
+
+        .stat-icon.purple {
+            background: #f3e8ff;
+            color: #9333ea;
+        }
+
+        .stat-icon.orange {
+            background: #fed7aa;
+            color: #ea580c;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: var(--slate-200);
+            color: var(--slate-700);
+        }
+
+        .btn-secondary:hover {
+            background: var(--slate-300);
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: var(--white);
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        /* Table */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: var(--slate-50);
+            border-bottom: 1px solid var(--slate-200);
+        }
+
+        th {
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--slate-700);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--slate-200);
+            font-size: 14px;
+            color: var(--slate-600);
+        }
+
+        tbody tr:hover {
+            background: var(--slate-50);
+        }
+
+        .employee-name {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .employee-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge-active {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-inactive {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .badge-onleave {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .dept-badge {
+            background: var(--slate-100);
+            color: var(--slate-700);
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+        }
+
+        /* Search & Filter */
+        .search-bar {
+            margin-bottom: 24px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 250px;
+            padding: 10px 16px;
+            border: 1px solid var(--slate-200);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 1px solid var(--slate-200);
+            background: var(--white);
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--slate-600);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            color: var(--white);
+            border-color: var(--primary);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--slate-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            background: var(--white);
+        }
+
+        .modal-header h2 {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--slate-900);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--slate-600);
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .close-btn:hover {
+            color: var(--slate-900);
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--slate-200);
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--slate-700);
+            margin-bottom: 8px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--slate-200);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        input[type="date"] {
+            cursor: pointer;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+            color: var(--slate-600);
+            margin-bottom: 8px;
+        }
+
+        .empty-state .text-secondary {
+            font-size: 14px;
+            color: var(--slate-500);
+        }
+
+        /* Loading */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--slate-200);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            border-top: 1px solid var(--slate-200);
+            background: var(--slate-50);
+        }
+
+        .pagination-info {
+            font-size: 13px;
+            color: var(--slate-600);
+        }
+
+        .pagination-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .pagination-btn {
+            padding: 6px 12px;
+            border: 1px solid var(--slate-200);
+            background: var(--white);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--slate-700);
+            transition: all 0.2s ease;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            background: var(--slate-100);
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Responsive */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--slate-700);
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                position: fixed;
+                width: 256px;
+                height: 100vh;
+                left: 0;
+                top: 0;
+            }
+
+            .sidebar.hidden {
+                transform: translateX(-100%);
+            }
+
+            .main-content {
+                width: 100%;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .user-info {
+                display: none;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            }
+        }
+
+        @media (max-width: 640px) {
+            .sidebar {
+                width: 240px;
+            }
+
+            .header {
+                padding: 12px 16px;
+            }
+
+            .header-left h2 {
+                font-size: 18px;
+            }
+
+            .content {
+                padding: 16px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-card {
+                flex-direction: column;
+            }
+
+            .stat-icon {
+                align-self: flex-start;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+
+            .modal-content {
+                width: 95%;
+            }
+
+            .search-bar {
+                flex-direction: column;
+            }
+
+            .search-input {
+                min-width: auto;
+            }
+        }
+
+        /* Charts & Sections */
+        .section {
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--slate-900);
+            margin-bottom: 16px;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 24px;
+        }
+
+        .progress-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .progress-bar-label {
+            flex: 0 0 120px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--slate-700);
+        }
+
+        .progress-bar-track {
+            flex: 1;
+            height: 8px;
+            background: var(--slate-200);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-bar-value {
+            flex: 0 0 40px;
+            text-align: right;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--slate-600);
+        }
+
+        .chart-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 200px;
+            background: var(--slate-50);
+            border-radius: 8px;
+            color: var(--slate-500);
+            text-align: center;
+            padding: 24px;
+        }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Utility */
+        .text-muted {
+            color: var(--slate-500);
+        }
+
+        .mt-2 {
+            margin-top: 16px;
+        }
+
+        .mb-2 {
+            margin-bottom: 16px;
+        }
+
+        .gap-2 {
+            gap: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-icon">👥</div>
+                <div class="logo-text">
+                    <h1>work-edm</h1>
+                    <p>HR Management</p>
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <button class="nav-item active" data-view="dashboard">
+                    <span>📊</span> Dashboard
+                </button>
+                <button class="nav-item" data-view="employees">
+                    <span>👤</span> Employees
+                </button>
+                <button class="nav-item" data-view="reports">
+                    <span>📈</span> Reports
+                </button>
+                <button class="nav-item" data-view="settings">
+                    <span>⚙️</span> Settings
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <p>v1.0.0</p>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <h2 id="pageTitle">Dashboard</h2>
+                    <p id="pageSubtitle">Welcome back! Here's your HR overview.</p>
+                </div>
+
+                <div class="header-right">
+                    <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+                    <div class="user-profile" id="userProfileBtn">
+                        <div class="avatar">JD</div>
+                        <div class="user-info">
+                            <p>John Doe</p>
+                            <p>Administrator</p>
+                        </div>
+                        <span>▼</span>
+
+                        <!-- Dropdown Menu -->
+                        <div class="dropdown-menu" id="userDropdown">
+                            <button class="dropdown-item" data-action="settings">
+                                ⚙️ Settings
+                            </button>
+                            <button class="dropdown-item" data-action="logout">
+                                🚪 Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div class="content">
+                <!-- Dashboard View -->
+                <div class="view active" data-view="dashboard" id="dashboardView">
+                    <!-- Stats Grid -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-content">
+                                <h3>Total Employees</h3>
+                                <div class="value" id="totalEmployees">0</div>
+                                <p class="change">All active and inactive</p>
+                            </div>
+                            <div class="stat-icon blue">👥</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-content">
+                                <h3>Active Employees</h3>
+                                <div class="value" id="activeEmployees">0</div>
+                                <p class="change" id="activePercentage">0% of total</p>
+                            </div>
+                            <div class="stat-icon green">✓</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-content">
+                                <h3>Departments</h3>
+                                <div class="value" id="departmentCount">0</div>
+                                <p class="change">Across organization</p>
+                            </div>
+                            <div class="stat-icon purple">📁</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-content">
+                                <h3>New Hires (30 days)</h3>
+                                <div class="value" id="newHires">0</div>
+                                <p class="change">Recent additions</p>
+                            </div>
+                            <div class="stat-icon orange">📈</div>
+                        </div>
+                    </div>
+
+                    <!-- Two Column Layout -->
+                    <div class="two-column">
+                        <!-- Department Breakdown -->
+                        <div class="card">
+                            <h3 class="section-title">Department Breakdown</h3>
+                            <div id="departmentBreakdown"></div>
+                        </div>
+
+                        <!-- Quick Stats -->
+                        <div class="card">
+                            <h3 class="section-title">Quick Stats</h3>
+                            <div class="progress-bar">
+                                <div class="progress-bar-label">Avg. Tenure</div>
+                                <div style="flex: 1;"></div>
+                                <div class="progress-bar-value" id="avgTenure">0 yrs</div>
+                            </div>
+                            <div class="progress-bar mt-2">
+                                <div class="progress-bar-label">Newest Hire</div>
+                                <div style="flex: 1;"></div>
+                                <div class="progress-bar-value" id="newestHire">-</div>
+                            </div>
+                            <button class="btn btn-primary" style="width: 100%; margin-top: 16px;" data-view="employees">
+                                View All Employees
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="card mt-2">
+                        <h3 class="section-title">Recent Employees</h3>
+                        <div id="recentEmployees"></div>
+                    </div>
+                </div>
+
+                <!-- Employee Directory View -->
+                <div class="view" data-view="employees" id="employeesView">
+                    <div class="search-bar">
+                        <input 
+                            type="text" 
+                            class="search-input" 
+                            id="searchInput" 
+                            placeholder="Search by name, email, or department..."
+                        >
+                        <button class="btn btn-primary" id="addEmployeeBtn">
+                            ➕ Add Employee
+                        </button>
+                    </div>
+
+                    <div style="margin-bottom: 16px;" id="departmentFilters"></div>
+
+                    <div class="card">
+                        <div class="table-container">
+                            <table id="employeeTable">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Position</th>
+                                        <th>Department</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="employeeTableBody">
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="pagination" id="pagination"></div>
+                    </div>
+                </div>
+
+                <!-- Reports View -->
+                <div class="view" data-view="reports" id="reportsView">
+                    <div class="stats-grid" style="margin-bottom: 24px;">
+                        <div class="card">
+                            <h3 class="section-title">Total Employees</h3>
+                            <div class="value" id="reportTotalEmployees" style="font-size: 32px;">0</div>
+                        </div>
+                        <div class="card">
+                            <h3 class="section-title">Active Employees</h3>
+                            <div class="value" id="reportActiveEmployees" style="font-size: 32px;">0</div>
+                        </div>
+                        <div class="card">
+                            <h3 class="section-title">Departments</h3>
+                            <div class="value" id="reportDepartments" style="font-size: 32px;">0</div>
+                        </div>
+                    </div>
+
+                    <div class="two-column">
+                        <div class="card">
+                            <h3 class="section-title">Employees by Department</h3>
+                            <div id="reportDepartmentBreakdown"></div>
+                        </div>
+
+                        <div class="card">
+                            <h3 class="section-title">Employee Status</h3>
+                            <div id="reportStatusBreakdown"></div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-2">
+                        <h3 class="section-title">Export Data</h3>
+                        <button class="btn btn-primary" id="exportCsvBtn">
+                            📥 Export to CSV
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Settings View -->
+                <div class="view" data-view="settings" id="settingsView">
+                    <div class="card">
+                        <h3 class="section-title">General Settings</h3>
+                        <form id="settingsForm">
+                            <div class="form-group">
+                                <label>Organization Name</label>
+                                <input type="text" id="orgName" value="ACME Corporation">
+                            </div>
+                            <div class="form-group">
+                                <label>Organization Email</label>
+                                <input type="email" id="orgEmail" value="admin@acme.com">
+                            </div>
+                            <div class="form-group">
+                                <label>Timezone</label>
+                                <select id="timezone">
+                                    <option value="UTC">UTC</option>
+                                    <option value="EST">EST (Eastern)</option>
+                                    <option value="CST">CST (Central)</option>
+                                    <option value="PST">PST (Pacific)</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Employee Form Modal -->
+    <div class="modal" id="employeeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add Employee</h2>
+                <button class="close-btn" id="closeModalBtn">&times;</button>
+            </div>
+            <form id="employeeForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Full Name *</label>
+                        <input type="text" id="empName" placeholder="John Doe" required>
+                        <span class="error-msg" style="color: var(--danger); font-size: 12px; display: none;"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email Address *</label>
+                        <input type="email" id="empEmail" placeholder="john@example.com" required>
+                        <span class="error-msg" style="color: var(--danger); font-size: 12px; display: none;"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Position *</label>
+                        <input type="text" id="empPosition" placeholder="Software Engineer" required>
+                        <span class="error-msg" style="color: var(--danger); font-size: 12px; display: none;"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Department *</label>
+                        <select id="empDepartment" required>
+                            <option value="">Select Department</option>
+                            <option value="Engineering">Engineering</option>
+                            <option value="Sales">Sales</option>
+                            <option value="Marketing">Marketing</option>
+                            <option value="HR">HR</option>
+                            <option value="Finance">Finance</option>
+                            <option value="Operations">Operations</option>
+                        </select>
+                        <span class="error-msg" style="color: var(--danger); font-size: 12px; display: none;"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Join Date *</label>
+                        <input type="date" id="empJoinDate" required>
+                        <span class="error-msg" style="color: var(--danger); font-size: 12px; display: none;"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Status *</label>
+                        <select id="empStatus" required>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                            <option value="on-leave">On Leave</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancelModalBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // Employee Data Management System
+        // ==========================================
+
+        class EmployeeManager {
+            constructor() {
+                this.employees = this.loadEmployees();
+                this.currentPage = 1;
+                this.pageSize = 10;
+                this.searchQuery = '';
+                this.selectedDepartment = null;
+                this.editingId = null;
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.render();
+            }
+
+            setupEventListeners() {
+                // Navigation
+                document.querySelectorAll('[data-view]').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        if (btn.classList.contains('nav-item')) {
+                            this.switchView(btn.dataset.view);
+                        } else {
+                            this.switchView(btn.dataset.view);
+                        }
+                    });
+                });
+
+                // Mobile menu
+                document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+                    document.getElementById('sidebar').classList.toggle('hidden');
+                });
+
+                // User profile dropdown
+                document.getElementById('userProfileBtn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    document.getElementById('userDropdown').classList.toggle('show');
+                });
+
+                document.addEventListener('click', () => {
+                    document.getElementById('userDropdown').classList.remove('show');
+                });
+
+                // Dropdown actions
+                document.querySelectorAll('[data-action]').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const action = e.target.closest('[data-action]')?.dataset.action;
+                        if (action === 'settings') {
+                            this.switchView('settings');
+                        } else if (action === 'logout') {
+                            alert('Logging out...');
+                        }
+                    });
+                });
+
+                // Employee management
+                document.getElementById('addEmployeeBtn').addEventListener('click', () => {
+                    this.openEmployeeModal();
+                });
+
+                document.getElementById('closeModalBtn').addEventListener('click', () => {
+                    this.closeEmployeeModal();
+                });
+
+                document.getElementById('cancelModalBtn').addEventListener('click', () => {
+                    this.closeEmployeeModal();
+                });
+
+                document.getElementById('employeeModal').addEventListener('click', (e) => {
+                    if (e.target.id === 'employeeModal') {
+                        this.closeEmployeeModal();
+                    }
+                });
+
+                document.getElementById('employeeForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.saveEmployee();
+                });
+
+                // Search
+                document.getElementById('searchInput').addEventListener('input', (e) => {
+                    this.searchQuery = e.target.value.toLowerCase();
+                    this.currentPage = 1;
+                    this.renderEmployeesTable();
+                });
+
+                // Export
+                document.getElementById('exportCsvBtn').addEventListener('click', () => {
+                    this.exportToCSV();
+                });
+
+                // Settings
+                document.getElementById('settingsForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    alert('Settings saved successfully!');
+                });
+            }
+
+            switchView(viewName) {
+                // Hide all views
+                document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+                document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+
+                // Show selected view
+                document.querySelector(`[data-view="${viewName}"]`).classList.add('active');
+                document.querySelector(`.nav-item[data-view="${viewName}"]`)?.classList.add('active');
+
+                // Update header
+                const titles = {
+                    dashboard: { title: 'Dashboard', subtitle: 'Welcome back! Here\'s your HR overview.' },
+                    employees: { title: 'Employee Directory', subtitle: 'Manage and view all employees' },
+                    reports: { title: 'Reports', subtitle: 'Analytics and insights' },
+                    settings: { title: 'Settings', subtitle: 'Manage system settings' }
+                };
+
+                const view = titles[viewName] || titles.dashboard;
+                document.getElementById('pageTitle').textContent = view.title;
+                document.getElementById('pageSubtitle').textContent = view.subtitle;
+
+                // Close mobile menu
+                document.getElementById('sidebar').classList.add('hidden');
+
+                // Render view-specific content
+                if (viewName === 'dashboard') {
+                    this.renderDashboard();
+                } else if (viewName === 'employees') {
+                    this.renderEmployeesView();
+                } else if (viewName === 'reports') {
+                    this.renderReports();
+                }
+            }
+
+            // ==========================================
+            // Dashboard Rendering
+            // ==========================================
+
+            renderDashboard() {
+                const stats = this.getStatistics();
+
+                // Total employees
+                document.getElementById('totalEmployees').textContent = stats.total;
+
+                // Active employees
+                document.getElementById('activeEmployees').textContent = stats.active;
+                document.getElementById('activePercentage').textContent = `${stats.activePercentage}% of total`;
+
+                // Departments
+                document.getElementById('departmentCount').textContent = Object.keys(stats.byDepartment).length;
+
+                // New hires
+                document.getElementById('newHires').textContent = stats.newHires;
+
+                // Department breakdown
+                this.renderDepartmentBreakdown('departmentBreakdown', stats.byDepartment, stats.total);
+
+                // Quick stats
+                document.getElementById('avgTenure').textContent = `${stats.avgTenure} yrs`;
+                document.getElementById('newestHire').textContent = stats.newestHire;
+
+                // Recent employees
+                this.renderRecentEmployees();
+            }
+
+            renderRecentEmployees() {
+                const recent = this.employees
+                    .sort((a, b) => new Date(b.joinDate) - new Date(a.joinDate))
+                    .slice(0, 5);
+
+                const html = recent.length ? recent.map(emp => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--slate-200);">
+                        <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+                            <div class="employee-avatar">${this.getInitials(emp.name)}</div>
+                            <div>
+                                <p style="font-weight: 500; color: var(--slate-900);">${emp.name}</p>
+                                <p style="font-size: 12px; color: var(--slate-500);">${emp.position}</p>
+                            </div>
+                        </div>
+                        <span style="font-size: 12px; color: var(--slate-500);">${this.formatDate(emp.joinDate)}</span>
+                    </div>
+                `).join('') : `
+                    <div class="empty-state">
+                        <p>No employees yet</p>
+                    </div>
+                `;
+
+                document.getElementById('recentEmployees').innerHTML = html;
+            }
+
+            // ==========================================
+            // Employees Table
+            // ==========================================
+
+            renderEmployeesView() {
+                this.renderDepartmentFilters();
+                this.renderEmployeesTable();
+            }
+
+            renderDepartmentFilters() {
+                const departments = [...new Set(this.employees.map(e => e.department))].sort();
+                const html = departments.map(dept => `
+                    <button class="filter-btn ${this.selectedDepartment === dept ? 'active' : ''}" data-dept="${dept}">
+                        ${dept}
+                    </button>
+                `).join('');
+
+                const container = document.getElementById('departmentFilters');
+                container.innerHTML = html + (this.selectedDepartment ? '<button class="filter-btn" data-dept="clear">Clear</button>' : '');
+
+                container.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        if (btn.dataset.dept === 'clear') {
+                            this.selectedDepartment = null;
+                        } else {
+                            this.selectedDepartment = this.selectedDepartment === btn.dataset.dept ? null : btn.dataset.dept;
+                        }
+                        this.currentPage = 1;
+                        this.renderEmployeesView();
+                    });
+                });
+            }
+
+            renderEmployeesTable() {
+                // Filter employees
+                let filtered = this.employees;
+
+                if (this.searchQuery) {
+                    filtered = filtered.filter(emp =>
+                        emp.name.toLowerCase().includes(this.searchQuery) ||
+                        emp.email.toLowerCase().includes(this.searchQuery) ||
+                        emp.position.toLowerCase().includes(this.searchQuery) ||
+                        emp.department.toLowerCase().includes(this.searchQuery)
+                    );
+                }
+
+                if (this.selectedDepartment) {
+                    filtered = filtered.filter(emp => emp.department === this.selectedDepartment);
+                }
+
+                // Pagination
+                const totalPages = Math.ceil(filtered.length / this.pageSize);
+                const startIndex = (this.currentPage - 1) * this.pageSize;
+                const paginated = filtered.slice(startIndex, startIndex + this.pageSize);
+
+                // Render table
+                const html = paginated.map(emp => `
+                    <tr>
+                        <td>
+                            <div class="employee-name">
+                                <div class="employee-avatar">${this.getInitials(emp.name)}</div>
+                                <span>${emp.name}</span>
+                            </div>
+                        </td>
+                        <td>${emp.email}</td>
+                        <td>${emp.position}</td>
+                        <td><span class="dept-badge">${emp.department}</span></td>
+                        <td><span class="badge badge-${emp.status}">${this.formatStatus(emp.status)}</span></td>
+                        <td style="text-align: center;">
+                            <button class="btn btn-sm" style="background: none; border: none; padding: 4px 8px; color: var(--primary); cursor: pointer;" onclick="employeeManager.editEmployee('${emp.id}')">✎</button>
+                            <button class="btn btn-sm" style="background: none; border: none; padding: 4px 8px; color: var(--danger); cursor: pointer;" onclick="employeeManager.deleteEmployee('${emp.id}')">🗑</button>
+                        </td>
+                    </tr>
+                `).join('');
+
+                if (paginated.length === 0) {
+                    document.getElementById('employeeTableBody').innerHTML = `
+                        <tr>
+                            <td colspan="6">
+                                <div class="empty-state">
+                                    <div class="empty-icon">👥</div>
+                                    <p>No employees found</p>
+                                    <p class="text-secondary">Try adjusting your search or filters</p>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                } else {
+                    document.getElementById('employeeTableBody').innerHTML = html;
+                }
+
+                // Render pagination
+                const paginationHtml = `
+                    <div class="pagination-info">
+                        Showing <strong>${startIndex + 1}</strong> to <strong>${Math.min(startIndex + this.pageSize, filtered.length)}</strong> of <strong>${filtered.length}</strong> employees
+                    </div>
+                    <div class="pagination-controls">
+                        <button class="pagination-btn" ${this.currentPage === 1 ? 'disabled' : ''} onclick="employeeManager.previousPage()">Previous</button>
+                        <span style="padding: 6px 12px; font-size: 13px; color: var(--slate-600);">Page ${this.currentPage} of ${totalPages || 1}</span>
+                        <button class="pagination-btn" ${this.currentPage === totalPages || totalPages === 0 ? 'disabled' : ''} onclick="employeeManager.nextPage()">Next</button>
+                    </div>
+                `;
+
+                document.getElementById('pagination').innerHTML = paginationHtml;
+            }
+
+            previousPage() {
+                if (this.currentPage > 1) {
+                    this.currentPage--;
+                    this.renderEmployeesTable();
+                }
+            }
+
+            nextPage() {
+                const filtered = this.getFilteredEmployees();
+                const totalPages = Math.ceil(filtered.length / this.pageSize);
+                if (this.currentPage < totalPages) {
+                    this.currentPage++;
+                    this.renderEmployeesTable();
+                }
+            }
+
+            getFilteredEmployees() {
+                let filtered = this.employees;
+                if (this.searchQuery) {
+                    filtered = filtered.filter(emp =>
+                        emp.name.toLowerCase().includes(this.searchQuery) ||
+                        emp.email.toLowerCase().includes(this.searchQuery) ||
+                        emp.position.toLowerCase().includes(this.searchQuery) ||
+                        emp.department.toLowerCase().includes(this.searchQuery)
+                    );
+                }
+                if (this.selectedDepartment) {
+                    filtered = filtered.filter(emp => emp.department === this.selectedDepartment);
+                }
+                return filtered;
+            }
+
+            // ==========================================
+            // Reports
+            // ==========================================
+
+            renderReports() {
+                const stats = this.getStatistics();
+
+                document.getElementById('reportTotalEmployees').textContent = stats.total;
+                document.getElementById('reportActiveEmployees').textContent = stats.active;
+                document.getElementById('reportDepartments').textContent = Object.keys(stats.byDepartment).length;
+
+                this.renderDepartmentBreakdown('reportDepartmentBreakdown', stats.byDepartment, stats.total);
+
+                // Status breakdown
+                const statusHtml = `
+                    <div class="progress-bar">
+                        <div class="progress-bar-label">Active</div>
+                        <div style="flex: 1;"></div>
+                        <div class="progress-bar-value">${stats.active}</div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-bar-label">Inactive</div>
+                        <div style="flex: 1;"></div>
+                        <div class="progress-bar-value">${stats.total - stats.active}</div>
+                    </div>
+                `;
+
+                document.getElementById('reportStatusBreakdown').innerHTML = statusHtml;
+            }
+
+            renderDepartmentBreakdown(elementId, byDept, total) {
+                const html = Object.entries(byDept)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([dept, count]) => `
+                        <div class="progress-bar">
+                            <div class="progress-bar-label">${dept}</div>
+                            <div class="progress-bar-track">
+                                <div class="progress-bar-fill" style="width: ${(count / total) * 100}%"></div>
+                            </div>
+                            <div class="progress-bar-value">${count}</div>
+                        </div>
+                    `).join('');
+
+                document.getElementById(elementId).innerHTML = html || '<p class="text-muted">No data available</p>';
+            }
+
+            // ==========================================
+            // Employee Modal
+            // ==========================================
+
+            openEmployeeModal(employeeId = null) {
+                this.editingId = employeeId;
+
+                if (employeeId) {
+                    const emp = this.employees.find(e => e.id === employeeId);
+                    if (!emp) return;
+
+                    document.getElementById('modalTitle').textContent = 'Edit Employee';
+                    document.getElementById('empName').value = emp.name;
+                    document.getElementById('empEmail').value = emp.email;
+                    document.getElementById('empPosition').value = emp.position;
+                    document.getElementById('empDepartment').value = emp.department;
+                    document.getElementById('empJoinDate').value = emp.joinDate;
+                    document.getElementById('empStatus').value = emp.status;
+                } else {
+                    document.getElementById('modalTitle').textContent = 'Add Employee';
+                    document.getElementById('employeeForm').reset();
+                    document.getElementById('empStatus').value = 'active';
+                }
+
+                document.getElementById('employeeModal').classList.add('show');
+            }
+
+            closeEmployeeModal() {
+                document.getElementById('employeeModal').classList.remove('show');
+                document.getElementById('employeeForm').reset();
+                this.editingId = null;
+            }
+
+            saveEmployee() {
+                const formData = {
+                    name: document.getElementById('empName').value,
+                    email: document.getElementById('empEmail').value,
+                    position: document.getElementById('empPosition').value,
+                    department: document.getElementById('empDepartment').value,
+                    joinDate: document.getElementById('empJoinDate').value,
+                    status: document.getElementById('empStatus').value
+                };
+
+                // Validation
+                if (!formData.name || !formData.email || !formData.position || !formData.department || !formData.joinDate) {
+                    alert('Please fill all required fields');
+                    return;
+                }
+
+                if (this.editingId) {
+                    // Update
+                    const index = this.employees.findIndex(e => e.id === this.editingId);
+                    if (index !== -1) {
+                        this.employees[index] = { ...this.employees[index], ...formData };
+                    }
+                } else {
+                    // Create
+                    const newEmployee = {
+                        id: 'emp_' + Date.now(),
+                        ...formData
+                    };
+                    this.employees.push(newEmployee);
+                }
+
+                this.saveEmployees();
+                this.closeEmployeeModal();
+                this.renderEmployeesTable();
+                this.renderDashboard();
+                alert('Employee saved successfully!');
+            }
+
+            editEmployee(employeeId) {
+                this.openEmployeeModal(employeeId);
+            }
+
+            deleteEmployee(employeeId) {
+                if (confirm('Are you sure you want to delete this employee?')) {
+                    this.employees = this.employees.filter(e => e.id !== employeeId);
+                    this.saveEmployees();
+                    this.renderEmployeesTable();
+                    this.renderDashboard();
+                    alert('Employee deleted successfully!');
+                }
+            }
+
+            // ==========================================
+            // Utilities
+            // ==========================================
+
+            getStatistics() {
+                const total = this.employees.length;
+                const active = this.employees.filter(e => e.status === 'active').length;
+                const activePercentage = total > 0 ? Math.round((active / total) * 100) : 0;
+
+                const byDepartment = {};
+                this.employees.forEach(emp => {
+                    byDepartment[emp.department] = (byDepartment[emp.department] || 0) + 1;
+                });
+
+                const newHires = this.employees.filter(emp => {
+                    const joinDate = new Date(emp.joinDate);
+                    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+                    return joinDate >= thirtyDaysAgo;
+                }).length;
+
+                const avgTenure = this.calculateAverageTenure();
+                const newestHire = this.getNewestHireDate();
+
+                return {
+                    total,
+                    active,
+                    activePercentage,
+                    byDepartment,
+                    newHires,
+                    avgTenure,
+                    newestHire
+                };
+            }
+
+            calculateAverageTenure() {
+                if (this.employees.length === 0) return '0';
+
+                const totalDays = this.employees.reduce((sum, emp) => {
+                    const joinDate = new Date(emp.joinDate);
+                    const today = new Date();
+                    const days = Math.floor((today - joinDate) / (1000 * 60 * 60 * 24));
+                    return sum + days;
+                }, 0);
+
+                const avgDays = totalDays / this.employees.length;
+                return (avgDays / 365).toFixed(1);
+            }
+
+            getNewestHireDate() {
+                if (this.employees.length === 0) return 'N/A';
+
+                const newest = this.employees.reduce((max, emp) => {
+                    return new Date(emp.joinDate) > new Date(max.joinDate) ? emp : max;
+                });
+
+                return this.formatDate(newest.joinDate);
+            }
+
+            formatDate(dateStr) {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+            }
+
+            formatStatus(status) {
+                const statuses = {
+                    'active': 'Active',
+                    'inactive': 'Inactive',
+                    'on-leave': 'On Leave'
+                };
+                return statuses[status] || status;
+            }
+
+            getInitials(name) {
+                return name
+                    .split(' ')
+                    .map(n => n[0])
+                    .join('')
+                    .toUpperCase()
+                    .slice(0, 2);
+            }
+
+            exportToCSV() {
+                const headers = ['Name', 'Email', 'Position', 'Department', 'Join Date', 'Status'];
+                const rows = this.employees.map(emp => [
+                    emp.name,
+                    emp.email,
+                    emp.position,
+                    emp.department,
+                    emp.joinDate,
+                    emp.status
+                ]);
+
+                const csvContent = [
+                    headers.join(','),
+                    ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+                ].join('\n');
+
+                const blob = new Blob([csvContent], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `employees-${new Date().toISOString().split('T')[0]}.csv`;
+                a.click();
+                window.URL.revokeObjectURL(url);
+            }
+
+            // ==========================================
+            // Data Persistence
+            // ==========================================
+
+            loadEmployees() {
+                const stored = localStorage.getItem('employees');
+                if (stored) {
+                    return JSON.parse(stored);
+                }
+
+                // Sample data
+                return [
+                    {
+                        id: 'emp_1',
+                        name: 'Sarah Johnson',
+                        email: 'sarah@example.com',
+                        position: 'Senior Engineer',
+                        department: 'Engineering',
+                        joinDate: '2022-03-15',
+                        status: 'active'
+                    },
+                    {
+                        id: 'emp_2',
+                        name: 'Michael Chen',
+                        email: 'michael@example.com',
+                        position: 'Product Manager',
+                        department: 'Product',
+                        joinDate: '2022-06-20',
+                        status: 'active'
+                    },
+                    {
+                        id: 'emp_3',
+                        name: 'Emily Rodriguez',
+                        email: 'emily@example.com',
+                        position: 'Marketing Specialist',
+                        department: 'Marketing',
+                        joinDate: '2023-01-10',
+                        status: 'active'
+                    },
+                    {
+                        id: 'emp_4',
+                        name: 'James Wilson',
+                        email: 'james@example.com',
+                        position: 'Sales Executive',
+                        department: 'Sales',
+                        joinDate: '2023-05-18',
+                        status: 'active'
+                    },
+                    {
+                        id: 'emp_5',
+                        name: 'Lisa Anderson',
+                        email: 'lisa@example.com',
+                        position: 'HR Specialist',
+                        department: 'HR',
+                        joinDate: '2022-11-05',
+                        status: 'active'
+                    },
+                    {
+                        id: 'emp_6',
+                        name: 'David Martinez',
+                        email: 'david@example.com',
+                        position: 'Finance Analyst',
+                        department: 'Finance',
+                        joinDate: '2023-02-28',
+                        status: 'active'
+                    }
+                ];
+            }
+
+            saveEmployees() {
+                localStorage.setItem('employees', JSON.stringify(this.employees));
+            }
+
+            render() {
+                this.renderDashboard();
+            }
+        }
+
+        // Initialize the app
+        const employeeManager = new EmployeeManager();
+    </script>
+</body>
+</html>

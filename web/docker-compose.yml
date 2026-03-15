@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      VITE_API_URL: http://api:3000/api
+    depends_on:
+      - api
+    networks:
+      - work-edm-network
+
+  api:
+    image: node:18-alpine
+    working_dir: /app
+    command: npm start
+    volumes:
+      - ./mock-api:/app
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+    networks:
+      - work-edm-network
+
+networks:
+  work-edm-network:
+    driver: bridge
